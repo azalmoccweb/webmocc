@@ -1,0 +1,51 @@
+<section class="login-stage login-stage--split">
+  <div class="login-stage__grid login-stage__grid--split">
+    <aside class="login-visual">
+      <div class="login-visual__backdrop"></div>
+      <div class="login-visual__shade"></div>
+      <div class="login-visual__content">
+        <div class="login-visual__brand">
+          <img src="/assets/airline-logo.png" alt="Azerbaijan Airlines" class="login-visual__brand-logo" />
+        </div>
+
+        <div class="login-visual__copy">
+          <div class="login-visual__eyebrow">Azerbaijan Airlines</div>
+          <h1 class="login-visual__title">Crew Request System</h1>
+          <div class="login-visual__divider"></div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="login-auth-shell">
+      <div class="login-auth-card">
+        <div class="login-auth-card__top">
+          <div class="login-auth-card__mark">
+            <img src="/assets/airline-mark.png" alt="Azerbaijan Airlines mark" />
+          </div>
+          <div class="login-auth-card__meta">
+            <div class="login-auth-card__eyebrow">Secure access</div>
+            <div class="login-auth-card__system"><%= appName %></div>
+          </div>
+        </div>
+
+        <div class="login-auth-card__header">
+          <h2 class="login-auth-card__title">Daxil ol</h2>
+        </div>
+
+        <form action="/login" method="post" class="login-form login-form--auth">
+          <div class="field-group">
+            <label class="form-label field-label">Email</label>
+            <input type="email" name="email" class="form-control form-control-lg field-input login-auth__input" required autocomplete="username" placeholder="name@company.com">
+          </div>
+          <div class="field-group">
+            <label class="form-label field-label">Şifrə</label>
+            <input type="password" name="password" class="form-control form-control-lg field-input login-auth__input" required autocomplete="current-password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-brand btn-lg login-submit">Daxil ol</button>
+        </form>
+
+        <div class="login-auth-card__footer">AZAL internal workflow portal</div>
+      </div>
+    </section>
+  </div>
+</section>

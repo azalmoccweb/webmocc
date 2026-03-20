@@ -1,0 +1,96 @@
+<section class="hero-surface hero-surface--compact mb-4">
+  <div class="hero-surface__content">
+    <div>
+      <div class="section-kicker">Queue management</div>
+      <h1 class="hero-surface__title hero-surface__title--sm">Requests</h1>
+      <p class="hero-surface__subtitle">Filter, review and act on incoming crew requests.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel-card mb-4">
+  <div class="panel-card__header panel-card__header--tight">
+    <div>
+      <h2 class="panel-card__title">Filters</h2>
+      <p class="panel-card__subtitle">Refine the queue by status, type and ownership.</p>
+    </div>
+  </div>
+  <form method="get" class="filters-grid">
+    <div class="filter-card">
+      <label class="form-label field-label">Status</label>
+      <select name="status" class="form-select field-input field-input--light">
+        <option value="">Hamısı</option>
+        <% ['PENDING','APPROVED','REJECTED','MANUAL_REVIEW'].forEach((s) => { %>
+          <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="filter-card">
+      <label class="form-label field-label">Tip</label>
+      <select name="type" class="form-select field-input field-input--light">
+        <option value="">Hamısı</option>
+        <option value="DAY_OFF" <%= filters.type === 'DAY_OFF' ? 'selected' : '' %>>Day Off</option>
+        <option value="VACATION" <%= filters.type === 'VACATION' ? 'selected' : '' %>>Vacation</option>
+        <option value="SICK" <%= filters.type === 'SICK' ? 'selected' : '' %>>Sick</option>
+      </select>
+    </div>
+    <div class="filter-card">
+      <label class="form-label field-label">Queue</label>
+      <select name="assigned" class="form-select field-input field-input--light">
+        <option value="">Hamısı</option>
+        <option value="me" <%= filters.assigned === 'me' ? 'selected' : '' %>>Only my queue</option>
+      </select>
+    </div>
+    <div class="filter-card d-grid gap-2 align-content-end">
+      <button class="btn btn-brand">Filter</button>
+      <a href="/requests" class="btn btn-outline-brand">Reset</a>
+    </div>
+  </form>
+</section>
+
+<section class="panel-card panel-card--table">
+  <div class="table-responsive">
+    <table class="table app-table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Subject</th>
+          <th>Sender</th>
+          <th>Status</th>
+          <th>Assignee</th>
+          <th>Age</th>
+          <th>Received</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!requests.length) { %>
+          <tr><td colspan="8" class="table-empty">Nəticə tapılmadı.</td></tr>
+        <% } %>
+        <% requests.forEach((item) => { %>
+          <tr>
+            <td><a class="table-link" href="/requests/<%= item.id %>">#<%= item.id %></a></td>
+            <td><span class="type-chip"><%= item.request_type_name || 'Manual Review' %></span></td>
+            <td>
+              <div class="table-subject"><a href="/requests/<%= item.id %>"><%= item.subject %></a></div>
+              <div class="table-subject__meta"><%= item.source_message_id ? 'Email source' : 'Manual sync' %></div>
+            </td>
+            <td>
+              <div class="person-lockup">
+                <div class="person-lockup__avatar"><%= (item.sender_name || item.sender_email || '?').charAt(0).toUpperCase() %></div>
+                <div>
+                  <div class="person-lockup__name"><%= item.sender_name || 'Unknown' %></div>
+                  <div class="person-lockup__meta"><%= item.sender_email || '-' %></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="status-pill status-pill--<%= statusBadgeClass(item.status).split(' ')[0].toLowerCase() %>"><%= item.status %></span></td>
+            <td><%= item.assignee_name || '-' %></td>
+            <td><span class="age-pill age-pill--<%= ageTone(item.age_seconds) %>"><%= formatAge(item.age_seconds) %></span></td>
+            <td><%= formatDate(item.received_at) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
