@@ -1,0 +1,109 @@
+<section class="hero-surface hero-surface--compact mb-4">
+  <div class="hero-surface__content">
+    <div>
+      <div class="section-kicker">Administration</div>
+      <h1 class="hero-surface__title hero-surface__title--sm">Settings</h1>
+      <p class="hero-surface__subtitle">Manage routing rules and privileged users.</p>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-xl-5">
+    <div class="panel-card h-100">
+      <div class="panel-card__header">
+        <div>
+          <h2 class="panel-card__title">Routing rules</h2>
+          <p class="panel-card__subtitle">Assign each request type to the right approver.</p>
+        </div>
+      </div>
+      <form action="/settings/routing" method="post" class="routing-grid">
+        <% routingRules.forEach((rule) => { %>
+          <input type="hidden" name="request_type_id" value="<%= rule.request_type_id %>">
+          <div class="routing-card">
+            <label class="routing-card__label"><%= rule.name %></label>
+            <select name="assignee_user_id" class="form-select field-input field-input--light">
+              <option value="">Seçilməyib</option>
+              <% users.filter((u) => u.is_active).forEach((u) => { %>
+                <option value="<%= u.id %>" <%= rule.assignee_user_id === u.id ? 'selected' : '' %>><%= u.name %> - <%= u.email %></option>
+              <% }) %>
+            </select>
+          </div>
+        <% }) %>
+        <button class="btn btn-brand">Save routing</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-xl-7">
+    <div class="panel-card mb-4">
+      <div class="panel-card__header">
+        <div>
+          <h2 class="panel-card__title">Create user</h2>
+          <p class="panel-card__subtitle">Grant admin or approver access to the team.</p>
+        </div>
+      </div>
+      <form action="/settings/users" method="post" class="user-form-grid">
+        <div class="form-block">
+          <label class="form-label field-label">Full name</label>
+          <input name="name" class="form-control field-input field-input--light" placeholder="Full name" required>
+        </div>
+        <div class="form-block">
+          <label class="form-label field-label">Email</label>
+          <input type="email" name="email" class="form-control field-input field-input--light" placeholder="Email" required>
+        </div>
+        <div class="form-block">
+          <label class="form-label field-label">Temporary password</label>
+          <input type="text" name="password" class="form-control field-input field-input--light" placeholder="Temporary password" required>
+        </div>
+        <div class="form-block">
+          <label class="form-label field-label">Role</label>
+          <select name="role" class="form-select field-input field-input--light">
+            <option value="approver">Approver</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="user-form-grid--wide d-grid">
+          <button class="btn btn-brand">Add user</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-card panel-card--table">
+      <div class="table-responsive">
+        <table class="table app-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach((u) => { %>
+              <tr>
+                <td class="fw-semibold"><%= u.name %></td>
+                <td><%= u.email %></td>
+                <td><span class="type-chip"><%= u.role %></span></td>
+                <td>
+                  <% if (u.is_active) { %>
+                    <span class="status-pill status-pill--success">Active</span>
+                  <% } else { %>
+                    <span class="status-pill status-pill--secondary">Disabled</span>
+                  <% } %>
+                </td>
+                <td class="text-end">
+                  <form action="/settings/users/<%= u.id %>/toggle" method="post">
+                    <button class="btn btn-outline-brand btn-sm" <%= user.id === u.id ? 'disabled' : '' %>><%= u.is_active ? 'Disable' : 'Enable' %></button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

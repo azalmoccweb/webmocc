@@ -1,0 +1,139 @@
+<section class="hero-surface hero-surface--compact mb-4">
+  <div class="hero-surface__content">
+    <div>
+      <div class="section-kicker">Request detail</div>
+      <h1 class="hero-surface__title hero-surface__title--sm">Request #<%= request.id %></h1>
+      <p class="hero-surface__subtitle"><%= request.subject %></p>
+    </div>
+    <div class="hero-surface__actions">
+      <span class="type-chip"><%= request.request_type_name || 'Manual Review' %></span>
+      <span class="status-pill status-pill--<%= statusBadgeClass(request.status).split(' ')[0].toLowerCase() %>"><%= request.status %></span>
+      <span class="age-pill age-pill--<%= ageTone(request.age_seconds) %>"><%= formatAge(request.age_seconds) %></span>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-xxl-8">
+    <div class="panel-card mb-4">
+      <div class="panel-card__header">
+        <div>
+          <h2 class="panel-card__title">Request information</h2>
+          <p class="panel-card__subtitle">Core request details and sender information.</p>
+        </div>
+      </div>
+
+      <div class="detail-grid mb-4">
+        <div class="detail-item"><span>Type</span><strong><%= request.request_type_name || 'Manual Review' %></strong></div>
+        <div class="detail-item"><span>Status</span><strong><%= request.status %></strong></div>
+        <div class="detail-item"><span>Sender</span><strong><%= senderDisplayName(request) %></strong></div>
+        <div class="detail-item"><span>Email</span><strong><%= request.sender_email || '-' %></strong></div>
+        <div class="detail-item"><span>Assigned to</span><strong><%= request.assignee_name || '-' %></strong></div>
+        <div class="detail-item"><span>Received at</span><strong><%= formatDate(request.received_at) %></strong></div>
+        <div class="detail-item"><span>Resolved by</span><strong><%= request.resolved_by_name || '-' %></strong></div>
+        <div class="detail-item"><span>Resolved at</span><strong><%= formatDate(request.resolved_at) %></strong></div>
+      </div>
+
+      <div class="panel-card__header panel-card__header--tight">
+        <div>
+          <h2 class="panel-card__title">Email body</h2>
+          <p class="panel-card__subtitle">Original request content.</p>
+        </div>
+      </div>
+
+      <% if (request.body_html) { %>
+        <div class="email-preview-stack">
+          <div class="email-preview-label">HTML preview</div>
+          <iframe
+            class="email-html-preview"
+            sandbox=""
+            referrerpolicy="no-referrer"
+            srcdoc="<%- emailPreviewSrcdoc(request.body_html) %>">
+          </iframe>
+          <details class="email-source-toggle mt-3">
+            <summary>Show extracted text</summary>
+            <div class="email-body mt-3"><pre><%= request.body_text || '(No text body)' %></pre></div>
+          </details>
+        </div>
+      <% } else { %>
+        <div class="email-body"><pre><%= request.body_text || '(No text body)' %></pre></div>
+      <% } %>
+
+      <% if (request.resolution_note) { %>
+        <div class="resolution-note mt-4"><strong>Resolution note:</strong> <%= request.resolution_note %></div>
+      <% } %>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card__header panel-card__header--tight">
+        <div>
+          <h2 class="panel-card__title">Event log</h2>
+          <p class="panel-card__subtitle">Full audit trail for this request.</p>
+        </div>
+      </div>
+      <div class="timeline">
+        <% request.events.forEach((event) => { %>
+          <div class="timeline-item">
+            <div class="timeline-item__dot"></div>
+            <div class="timeline-item__body">
+              <div class="timeline-item__title"><%= event.action %></div>
+              <div class="timeline-item__meta"><%= formatDate(event.created_at) %> <% if (event.actor_name) { %>• <%= event.actor_name %><% } %></div>
+              <% if (event.note) { %><div class="timeline-item__note"><%= event.note %></div><% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-4">
+    <% if (canManage && !isResolved) { %>
+      <div class="panel-card sticky-panel mb-4">
+        <div class="panel-card__header panel-card__header--tight">
+          <div>
+            <h2 class="panel-card__title">Decision</h2>
+            <p class="panel-card__subtitle">Apply the final outcome for this request.</p>
+          </div>
+        </div>
+        <form action="/requests/<%= request.id %>/approve" method="post" class="d-grid gap-2 mb-3">
+          <textarea name="note" class="form-control field-input field-input--light" rows="3" placeholder="Approve qeydi"></textarea>
+          <button class="btn btn-success btn-soft">Approve</button>
+        </form>
+        <form action="/requests/<%= request.id %>/reject" method="post" class="d-grid gap-2">
+          <textarea name="note" class="form-control field-input field-input--light" rows="3" placeholder="Reject səbəbi"></textarea>
+          <button class="btn btn-danger btn-soft">Reject</button>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="panel-card sticky-panel mb-4">
+        <div class="panel-card__header panel-card__header--tight">
+          <div>
+            <h2 class="panel-card__title">Status</h2>
+            <p class="panel-card__subtitle">This request cannot be changed from here.</p>
+          </div>
+        </div>
+        <div class="empty-inline"><%= isResolved ? 'Bu request artıq bağlanıb. Yeni qərar verilə bilməz.' : 'Bu request üzərində əməliyyat icazəniz yoxdur.' %></div>
+      </div>
+    <% } %>
+
+    <% if (user && user.role === 'admin') { %>
+      <div class="panel-card sticky-panel">
+        <div class="panel-card__header panel-card__header--tight">
+          <div>
+            <h2 class="panel-card__title">Reassign</h2>
+            <p class="panel-card__subtitle">Move this request to another active user.</p>
+          </div>
+        </div>
+        <form action="/requests/<%= request.id %>/reassign" method="post" class="d-grid gap-2">
+          <select name="assignee_user_id" class="form-select field-input field-input--light">
+            <option value="">Unassigned</option>
+            <% users.forEach((userItem) => { %>
+              <option value="<%= userItem.id %>" <%= request.assigned_to === userItem.id ? 'selected' : '' %>><%= userItem.name %> (<%= userItem.role %>)</option>
+            <% }) %>
+          </select>
+          <button class="btn btn-outline-brand">Update assignee</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</section>

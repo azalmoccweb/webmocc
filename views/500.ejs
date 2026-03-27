@@ -1,0 +1,7 @@
+<section class="empty-state premium-empty-state">
+  <div class="empty-state__code">500</div>
+  <h1 class="empty-state__title">Xəta baş verdi</h1>
+  <p class="empty-state__text">Server daxili xəta qaytardı. Zəhmət olmasa yenidən cəhd edin.</p>
+  <% if (error && error.message) { %><pre class="error-box"><%= error.message %></pre><% } %>
+  <a class="btn btn-brand" href="/">Dashboard-a qayıt</a>
+</section>

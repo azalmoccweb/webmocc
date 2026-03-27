@@ -1,0 +1,140 @@
+<section class="hero-surface mb-4 mb-lg-5">
+  <div class="hero-surface__content">
+    <div>
+      <div class="section-kicker">Operations overview</div>
+      <h1 class="hero-surface__title">Dashboard</h1>
+      <p class="hero-surface__subtitle">Crew request flow, approval load and pending queues in one place.</p>
+    </div>
+    <div class="hero-surface__actions">
+      <% if (gmailConfigured) { %>
+        <button class="btn btn-ghost-light" id="sync-mailbox-btn">Sync Gmail</button>
+      <% } %>
+      <a href="/requests" class="btn btn-outline-brand">Open requests</a>
+    </div>
+  </div>
+</section>
+
+<section class="row g-3 mb-4 mb-lg-5">
+  <div class="col-md-6 col-xl-4">
+    <article class="metric-card metric-card--primary h-100">
+      <div>
+        <div class="metric-card__label">Total requests</div>
+        <div class="metric-card__value"><%= stats.summary.total %></div>
+      </div>
+      <div class="metric-card__subvalue">Pending <strong><%= stats.summary.pending %></strong> · Manual review <strong><%= stats.summary.manual_review %></strong></div>
+    </article>
+  </div>
+  <div class="col-6 col-xl-2">
+    <article class="metric-card h-100">
+      <div class="metric-card__label">Pending</div>
+      <div class="metric-card__value"><%= stats.summary.pending %></div>
+    </article>
+  </div>
+  <div class="col-6 col-xl-2">
+    <article class="metric-card h-100">
+      <div class="metric-card__label">Approved</div>
+      <div class="metric-card__value"><%= stats.summary.approved %></div>
+    </article>
+  </div>
+  <div class="col-6 col-xl-2">
+    <article class="metric-card h-100">
+      <div class="metric-card__label">Rejected</div>
+      <div class="metric-card__value"><%= stats.summary.rejected %></div>
+    </article>
+  </div>
+  <div class="col-6 col-xl-2">
+    <article class="metric-card metric-card--alert h-100">
+      <div class="metric-card__label">Over 24h</div>
+      <div class="metric-card__value"><%= stats.summary.overdue %></div>
+    </article>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <div class="panel-card">
+    <div class="panel-card__header">
+      <div>
+        <h2 class="panel-card__title">Recent requests</h2>
+        <p class="panel-card__subtitle">Latest incoming items and their current state.</p>
+      </div>
+      <a href="/requests" class="panel-card__action">View all</a>
+    </div>
+
+    <% if (!latestRequests.length) { %>
+      <div class="empty-inline">Hələ request yoxdur.</div>
+    <% } else { %>
+      <div class="list-stack">
+        <% latestRequests.forEach((item) => { %>
+          <a href="/requests/<%= item.id %>" class="request-row">
+            <div class="person-lockup request-row__person">
+              <div class="person-lockup__avatar"><%= senderInitial(item) %></div>
+              <div>
+                <div class="person-lockup__name"><%= item.subject %></div>
+                <div class="person-lockup__meta"><%= senderDisplayName(item) %> · <%= item.sender_email || '-' %></div>
+              </div>
+            </div>
+            <div class="request-row__actions">
+              <span class="type-chip"><%= item.request_type_name || 'Manual Review' %></span>
+              <span class="status-pill status-pill--<%= statusBadgeClass(item.status).split(' ')[0].toLowerCase() %>"><%= item.status %></span>
+            </div>
+            <div class="request-row__meta">
+              <span class="age-pill age-pill--<%= ageTone(item.age_seconds) %>"><%= formatAge(item.age_seconds) %></span>
+              <span class="meta-inline"><%= formatDate(item.received_at) %></span>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="side-stack">
+    <div class="panel-card">
+      <div class="panel-card__header panel-card__header--tight">
+        <div>
+          <h2 class="panel-card__title">By request type</h2>
+          <p class="panel-card__subtitle">Distribution of incoming categories.</p>
+        </div>
+      </div>
+      <% const maxType = Math.max(1, ...stats.byType.map((item) => Number(item.total || 0))); %>
+      <% if (!stats.byType.length) { %>
+        <div class="empty-inline">Məlumat yoxdur.</div>
+      <% } else { %>
+        <div class="progress-list">
+          <% stats.byType.forEach((item) => { %>
+            <div class="progress-item">
+              <div class="progress-item__top">
+                <div>
+                  <div class="progress-item__name"><%= item.type_name %></div>
+                  <div class="stat-caption">Pending <%= item.pending %></div>
+                </div>
+                <strong><%= item.total %></strong>
+              </div>
+              <div class="progress-track"><div class="progress-bar" style="width: <%= Math.max(8, Math.round((Number(item.total || 0) / maxType) * 100)) %>%"></div></div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card__header panel-card__header--tight">
+        <div>
+          <h2 class="panel-card__title">Last 7 days</h2>
+          <p class="panel-card__subtitle">Daily request volume snapshot.</p>
+        </div>
+      </div>
+      <% if (!stats.recent.length) { %>
+        <div class="empty-inline">Son 7 gün üzrə məlumat yoxdur.</div>
+      <% } else { %>
+        <div class="mini-list">
+          <% stats.recent.forEach((row) => { %>
+            <div class="mini-list__item">
+              <span><%= formatDate(row.day) %></span>
+              <strong><%= row.total %></strong>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
